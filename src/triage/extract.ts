@@ -29,6 +29,10 @@ function detectNameProse(text: string): string | null {
   const patterns = [
     new RegExp(`referral for ${NAME}`),
     new RegExp(`(?:my|our)\\s+(?:son|daughter|child)\\s+${NAME}`),
+    // "my 4-year-old Ava" / "our 6 year old Sam"
+    new RegExp(`(?:my|our)\\s+\\d{1,2}[- ]?year[- ]?old\\s+${NAME}`),
+    // "for Owen's evaluation"
+    new RegExp(`\\bfor\\s+${NAME}'s\\b`),
     new RegExp(`\\bmi\\s+(?:hijo|hija)\\s+${NAME}`),
     new RegExp(`(?:por|para)\\s+(?:mi\\s+(?:hijo|hija)\\s+)?${NAME}`),
   ];
@@ -36,6 +40,9 @@ function detectNameProse(text: string): string | null {
     const m = text.match(re);
     if (m && m[1]) return m[1].trim();
   }
+  // Last resort: a capitalized given-name in possessive form, e.g. "Noah's DOB".
+  const possessive = text.match(/\b([A-Z][a-z]+)'s\b/);
+  if (possessive && possessive[1]) return possessive[1].trim();
   return null;
 }
 
@@ -166,29 +173,14 @@ export function extractFactsDeterministic(item: InboxItem): Facts {
   const sameDay = detectSameDay(text);
 
   const hasReferralShape = item.channel === "fax_referral" || /referr|evaluation/i.test(text);
-  let intent = detectIntent(text, hasReferralShape, sameDay);
-
-  // Missing-core-intake detection for referrals with blank fields.
-  const missing_info: string[] = [];
-  if (!child_name) missing_info.push("child name");
-  if (!dob && !age) missing_info.push("date of birth or age");
-  if (!parent_contact) missing_info.push("parent/guardian contact");
-  if (!payer && intent === "new_referral") missing_info.push("insurance / payer");
-
-  const coreMissingCount = [!dob && !age, !parent_contact, !payer].filter(Boolean).length;
-  const missingCoreIntake = hasReferralShape && coreMissingCount >= 2;
-  if (missingCoreIntake) intent = "missing_paperwork";
-
-  const wantsBooking =
-    intent === "new_referral" ||
-    /book|schedul|opening|appointment|get him in|get her in|eval/i.test(text);
+  const { intent, missing_info, missingCoreIntake, wantsBooking } = deriveIntakeSignals(
+    { child_name, dob, age, parent_contact, payer },
+    text,
+    hasReferralShape,
+    sameDay,
+  );
 
   const safetyCandidates = detectSafetyCandidates(text);
-
-  // A reschedule of an existing appointment is an existing-patient request.
-  if (intent === "scheduling" && /reschedul|cancel|appointment/i.test(text)) {
-    // keep intent scheduling; classify.ts maps to schema enum
-  }
 
   return {
     child_name,
@@ -206,8 +198,64 @@ export function extractFactsDeterministic(item: InboxItem): Facts {
     sameDay,
     missingCoreIntake,
     missing_info,
+    hasReferralShape,
     safetyCandidates,
   };
+}
+
+const BOOKING_RE = /book|schedul|opening|appointment|get him in|get her in|eval/i;
+
+interface IntakeSignals {
+  intent: Intent;
+  missing_info: string[];
+  missingCoreIntake: boolean;
+  wantsBooking: boolean;
+}
+
+/**
+ * Field-dependent triage signals (intent, missing_info, missing-core-intake,
+ * booking intent), derived purely from the extracted field values + text. Kept
+ * separate so it can be re-run after LLM enrichment fills gaps — otherwise
+ * missing_info / intent would contradict the merged facts.
+ */
+function deriveIntakeSignals(
+  f: {
+    child_name: string | null;
+    dob: string | null;
+    age: string | null;
+    parent_contact: string | null;
+    payer: string | null;
+  },
+  text: string,
+  hasReferralShape: boolean,
+  sameDay: boolean,
+): IntakeSignals {
+  let intent = detectIntent(text, hasReferralShape, sameDay);
+
+  const missing_info: string[] = [];
+  if (!f.child_name) missing_info.push("child name");
+  if (!f.dob && !f.age) missing_info.push("date of birth or age");
+  if (!f.parent_contact) missing_info.push("parent/guardian contact");
+  if (!f.payer && intent === "new_referral") missing_info.push("insurance / payer");
+
+  const coreMissingCount = [!f.dob && !f.age, !f.parent_contact, !f.payer].filter(Boolean).length;
+  const missingCoreIntake = hasReferralShape && coreMissingCount >= 2;
+  if (missingCoreIntake) intent = "missing_paperwork";
+
+  const wantsBooking = intent === "new_referral" || BOOKING_RE.test(text);
+
+  return { intent, missing_info, missingCoreIntake, wantsBooking };
+}
+
+/**
+ * Re-derive field-dependent signals after a merge, so a referral whose blank
+ * payer/DOB the LLM recovered is no longer mis-routed as missing-paperwork and
+ * never lists a now-present field in missing_info.
+ */
+export function recomputeIntakeSignals(facts: Facts, item: InboxItem): Facts {
+  const text = `${item.subject}\n${item.body || ""}`;
+  const signals = deriveIntakeSignals(facts, text, facts.hasReferralShape, facts.sameDay);
+  return { ...facts, ...signals };
 }
 
 /** Detect a payer named inline (no label), e.g. "Insurance is Aetna PPO". */

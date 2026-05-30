@@ -28,6 +28,77 @@ export function assertNoClinicalAdvice(draft: string): { ok: boolean; reason?: s
   return { ok: true };
 }
 
+/**
+ * Spanish clinical-advice patterns. The English set above does not fire on
+ * Spanish prose, so a Spanish (LLM) draft would otherwise be unscreened — a
+ * real hole for our Spanish-speaking families. Tuned NOT to match the vetted
+ * Spanish templates (e.g. "podría estar fuera de la red", "Parece que faltan").
+ */
+const CLINICAL_ADVICE_PATTERNS_ES: Array<{ re: RegExp; reason: string }> = [
+  { re: /\b(un|una)\s+(retraso|trastorno|condici[óo]n|diagn[óo]stico|s[íi]ndrome)\b/i, reason: "diagnostic / symptom language (es)" },
+  { re: /\bdiagn[óo]stic|\btrastorno\b|\bs[íi]ndrome\b/i, reason: "diagnostic language (es)" },
+  { re: /\bes\s+(completamente\s+|perfectamente\s+)?normal\b|no\s+se\s+preocupe[n]?|no\s+hay\s+de\s+qu[ée]\s+preocupar|mejorar[áa]\b|estar[áa]\s+bien|d[ée]le\s+tiempo/i, reason: "prognosis / reassurance (es)" },
+  { re: /\bpued[ea]n?\s+esperar\b|deber[íi]a[n]?\s+esperar\b/i, reason: "advice to wait (es)" },
+  { re: /\b(tome|tomar|dosis|medicaci[óo]n|medicamento|suplemento|vitamina|melatonina|ibuprofeno)\b/i, reason: "medication / dose (es)" },
+  { re: /\bparece\s+(ser|tener|tratarse)\b|\bsuena a\b|\bprobablemente\s+(sea|tenga|es)\b|\bpodr[íi]a\s+(ser|tener|tratarse)\b/i, reason: "symptom interpretation (es)" },
+  { re: /\bsignifica que\b|\bindica que\b|\besto quiere decir\b/i, reason: "interpreting behavior (es)" },
+  { re: /\bdeber[íi]a[n]?\s+(intentar|empezar|comenzar|dejar|probar|hacer)\b/i, reason: "clinical recommendation (es)" },
+];
+
+/**
+ * Phrases that would imply the message was actually sent or the appointment
+ * finalized. A reviewable hold "pending confirmation" is allowed; a claim that
+ * something is booked/confirmed/sent is not.
+ */
+const IMPLIES_SENT_PATTERNS: Array<{ re: RegExp; reason: string }> = [
+  { re: /\b(we'?ve|we have|i'?ve|i have)\s+(sent|emailed|messaged|called|scheduled|booked|confirmed|registered|enrolled)\b/i, reason: "implies an action was already taken / message sent" },
+  { re: /\b(your|the)\s+(appointment|evaluation|eval|visit|slot)\s+(is|has been)\s+(booked|scheduled|confirmed|set|reserved)\b/i, reason: "implies the appointment is finalized" },
+  { re: /\b(message|reply|email)\s+(has been|was|is)\s+sent\b/i, reason: "implies the message was sent" },
+  { re: /\bhemos\s+(enviado|programado|agendado|confirmado|inscrito)\b/i, reason: "implies an action was already taken (es)" },
+  { re: /\bsu\s+cita\s+(est[áa]|ha sido)\s+(confirmada|programada|agendada|reservada)\b/i, reason: "implies the appointment is finalized (es)" },
+  { re: /\b(mensaje|correo)\s+(enviado|ha sido enviado)\b/i, reason: "implies the message was sent (es)" },
+];
+
+/** Internal artifact ids (hold_/task_/draft_/etc.) must never reach a family. */
+const INTERNAL_ID_RE = /\b(hold|task|draft|esc|slot|pat|prov)_[A-Za-z0-9]{4,}\b/;
+
+/**
+ * Full screen applied to EVERY emitted draft (LLM-generated or template): no
+ * clinical advice (EN or ES), no claim that anything was sent/booked, and no
+ * leaked internal ids. A failing draft is replaced upstream by a vetted template.
+ */
+export function screenDraft(draft: string, lang: "en" | "es"): { ok: boolean; reason?: string } {
+  const advice = assertNoClinicalAdvice(draft);
+  if (!advice.ok) return advice;
+  if (lang === "es") {
+    for (const { re, reason } of CLINICAL_ADVICE_PATTERNS_ES) {
+      if (re.test(draft)) return { ok: false, reason };
+    }
+  }
+  for (const { re, reason } of IMPLIES_SENT_PATTERNS) {
+    if (re.test(draft)) return { ok: false, reason };
+  }
+  if (INTERNAL_ID_RE.test(draft)) return { ok: false, reason: "contains an internal artifact id" };
+  return { ok: true };
+}
+
+const DISCLAIMER_RE_EN = /draft for staff review|draft only|not (yet )?sent|has not been sent|no appointment (has been|is) booked/i;
+const DISCLAIMER_RE_ES = /borrador|revisi[óo]n del personal|no se ha enviado|no enviado|no se ha reservado/i;
+
+/**
+ * Guarantee the "draft for staff review / not sent" disclaimer that every safe
+ * template carries — appended when an accepted LLM draft omits it.
+ */
+export function ensureDisclaimer(draft: string, lang: "en" | "es"): string {
+  const has = lang === "es" ? DISCLAIMER_RE_ES.test(draft) : DISCLAIMER_RE_EN.test(draft);
+  if (has) return draft;
+  const note =
+    lang === "es"
+      ? "\n\n(Borrador para revisión del personal; no se ha enviado y no se ha reservado ninguna cita.)"
+      : "\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)";
+  return `${draft}${note}`;
+}
+
 const ES = (en: string, es: string, lang: "en" | "es") => (lang === "es" ? es : en);
 
 /**

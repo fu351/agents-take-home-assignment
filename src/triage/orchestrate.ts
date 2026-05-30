@@ -10,7 +10,7 @@ import {
 } from "../tools.js";
 import type { Assignee, InboxItem } from "../types.js";
 import { generateDraftLLM, isLLMEnabled } from "./llm.js";
-import { assertNoClinicalAdvice, safeTemplate } from "./draftGuard.js";
+import { ensureDisclaimer, safeTemplate, screenDraft } from "./draftGuard.js";
 import type {
   ClassificationResult,
   DecisionContext,
@@ -47,8 +47,22 @@ export async function orchestrateTools(
     draftChannel: channelFor(item),
   };
 
-  // ---- P0 safeguarding: escalate and get out of the way. No parent draft. ----
+  // ---- Identity grounding first, for EVERY item (who is this about?). ----
+  const patient = await search_patient({
+    name: facts.child_name ?? undefined,
+    dob: facts.dob ?? undefined,
+  });
+  if (patient.data.length > 0) {
+    ctx.patientFound = true;
+    ctx.patientId = patient.data[0].patient_id;
+    ctx.rationale.push(`search_patient → existing patient ${patient.data[0].name}.`);
+  } else {
+    ctx.rationale.push("search_patient → no existing record (treat as new/unverified).");
+  }
+
+  // ---- P0 safeguarding: ground in policy, escalate, get out of the way. ----
   if (classification.urgency === "P0") {
+    await lookup_policy({ topic: "safeguarding" });
     const esc = await escalate({
       item_id: item.id,
       reason: `Suspected safeguarding concern: ${facts.safetyCandidates.map((c) => c.reason).join("; ")}`,
@@ -66,30 +80,25 @@ export async function orchestrateTools(
     ctx.task_ids.push(task.data.task_id);
     ctx.draftScenario = "none"; // explicitly no draft
     ctx.rationale.push(
-      "Hard safety signal → P0; escalated to clinical lead and created a same-hour review task; deliberately produced no parent draft and ran no scheduling/billing steps.",
+      "Hard safety signal → P0; cited the safeguarding policy, escalated to the clinical lead, and created a same-hour review task; deliberately produced no parent draft and ran no scheduling/billing steps.",
     );
     return ctx;
   }
 
-  // ---- Cheap exit for noise. ----
+  // ---- Noise (spam/fyi): still human-reviewed; confirm it isn't misfiled. ----
   if (facts.intent === "spam" || facts.intent === "fyi") {
+    await lookup_policy({ topic: "service_lines" });
+    const task = await create_task({
+      assignee: "front_desk",
+      title: `Confirm and dismiss low-priority item: ${facts.child_name ?? item.subject}`,
+      due: nextBusinessDue(item, 2),
+      notes: `Classified as ${facts.intent}. Checked service_lines (no clinical action requested) and patient records (${ctx.patientFound ? "matches an existing patient — double-check before dismissing" : "no existing match"}). Front desk to confirm dismissal.`,
+    });
+    ctx.task_ids.push(task.data.task_id);
     ctx.rationale.push(
-      `Classified as ${facts.intent}; no tools warranted beyond human confirmation (avoided performative calls).`,
+      `Classified as ${facts.intent}; grounded identity + service_lines and created a low-priority confirm-dismissal task (every item still gets human review).`,
     );
     return ctx;
-  }
-
-  // ---- Identity grounding first. ----
-  const patient = await search_patient({
-    name: facts.child_name ?? undefined,
-    dob: facts.dob ?? undefined,
-  });
-  if (patient.data.length > 0) {
-    ctx.patientFound = true;
-    ctx.patientId = patient.data[0].patient_id;
-    ctx.rationale.push(`search_patient → existing patient ${patient.data[0].name}.`);
-  } else {
-    ctx.rationale.push("search_patient → no existing record (treat as new/unverified).");
   }
 
   // ---- Clinical advice question: route, never answer. ----
@@ -260,20 +269,25 @@ async function finalizeDraft(item: InboxItem, facts: Facts, ctx: DecisionContext
 
   let body: string | null = null;
 
+  // An LLM draft is accepted only if it passes the FULL screen (no clinical
+  // advice EN/ES, no "already sent/booked" claim, no leaked internal ids), and
+  // the staff-review disclaimer is guaranteed.
   if (isLLMEnabled()) {
     const generated = await generateDraftLLM(facts, ctx, ctx.draftScenario);
-    if (generated && assertNoClinicalAdvice(generated).ok) {
-      body = generated;
+    if (generated && screenDraft(generated, facts.language).ok) {
+      body = ensureDisclaimer(generated, facts.language);
     }
   }
 
   if (!body) {
-    body = safeTemplate(ctx.draftScenario, facts);
+    const template = safeTemplate(ctx.draftScenario, facts);
+    body = template ? ensureDisclaimer(template, facts.language) : null;
   }
 
-  if (!body || !assertNoClinicalAdvice(body).ok) {
-    // Last-resort safe default; should not happen since templates are vetted.
-    body = safeTemplate("acknowledge", facts);
+  // Final safety net: anything that still fails the screen becomes a vetted ack.
+  if (!body || !screenDraft(body, facts.language).ok) {
+    const ack = safeTemplate("acknowledge", facts);
+    body = ack ? ensureDisclaimer(ack, facts.language) : null;
   }
 
   if (!body) {

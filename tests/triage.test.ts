@@ -376,6 +376,7 @@ function baseFacts(): Facts {
     sameDay: false,
     missingCoreIntake: false,
     missing_info: [],
+    hasReferralShape: false,
     safetyCandidates: [],
   };
 }

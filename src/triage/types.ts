@@ -39,6 +39,8 @@ export interface Facts {
   sameDay: boolean;
   missingCoreIntake: boolean;
   missing_info: string[];
+  /** Whether the item looks like a referral (drives missing-core-intake). */
+  hasReferralShape: boolean;
 
   /** Human-readable safety phrases spotted by rules and/or the LLM. */
   safetyCandidates: SafetyCandidate[];

@@ -1,7 +1,7 @@
 import { getToolCallsForItem, withItemContext } from "./tools.js";
 import type { InboxItem, ItemOutput } from "./types.js";
 import { classify } from "./triage/classify.js";
-import { extractFactsDeterministic, mergeFacts } from "./triage/extract.js";
+import { extractFactsDeterministic, mergeFacts, recomputeIntakeSignals } from "./triage/extract.js";
 import { extractFactsLLM, isLLMEnabled } from "./triage/llm.js";
 import { orchestrateTools } from "./triage/orchestrate.js";
 import { buildOutputItem } from "./triage/output.js";
@@ -29,10 +29,14 @@ async function processItemSafely(item: InboxItem): Promise<ItemOutput> {
 }
 
 async function processItem(item: InboxItem): Promise<ItemOutput> {
-  // 1. Understand (deterministic; optional LLM enrich, merged).
+  // 1. Understand (deterministic; optional LLM enrich, merged). When the LLM
+  //    fills gaps, re-derive the field-dependent signals so missing_info /
+  //    intent never contradict the merged facts.
   const base = extractFactsDeterministic(item);
   const enriched = isLLMEnabled() ? await extractFactsLLM(item) : null;
-  const facts = mergeFacts(base, enriched);
+  const facts = enriched
+    ? recomputeIntakeSignals(mergeFacts(base, enriched), item)
+    : base;
 
   // 2. Assess safety (rule ∪ llm signals; monotonic, escalate-only).
   const safety = assessSafety(facts);

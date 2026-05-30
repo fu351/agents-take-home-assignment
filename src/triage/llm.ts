@@ -147,16 +147,23 @@ export async function generateDraftLLM(
   const messages = await getClient();
   if (!messages) return null;
 
+  // Strip internal artifact ids (hold_/task_/draft_/...) from the context so the
+  // model cannot echo them into a family-facing draft.
+  const safeContext = context.rationale
+    .join("; ")
+    .replace(/\b(hold|task|draft|esc|slot|pat|prov)_[A-Za-z0-9]+/g, "[ref]");
+
   const prompt = `Write a short, warm, professional DRAFT reply for front-desk staff to review (never sent automatically) at a pediatric therapy practice. Language: ${facts.language === "es" ? "Spanish" : "English"}.
 
 HARD RULES (compliance):
 - NO clinical advice of any kind: no symptom interpretation, no diagnosis, no "sounds like", no home exercises/stretches, no medications, no prognosis or reassurance about a clinical course, no explaining what a behavior means.
 - Only operational content: acknowledge receipt, explain the next operational step, and make clear this is a draft for staff review (no appointment is booked, no message has been sent).
+- Do NOT include any internal ids, codes, or reference numbers.
 - 2-4 sentences. Address the family warmly.
 
 Scenario: ${scenario}
 Child: ${facts.child_name ?? "the child"}
-Next step context: ${context.rationale.join("; ")}
+Next step context: ${safeContext}
 
 Return ONLY the draft text, no preamble.`;
 
