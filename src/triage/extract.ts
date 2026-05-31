@@ -187,6 +187,7 @@ export function extractFactsDeterministic(item: InboxItem): Facts {
     dob,
     age,
     parent_contact,
+    guardian_name: parentName,
     discipline,
     diagnosis_or_concern,
     payer,

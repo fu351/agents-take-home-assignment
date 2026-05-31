@@ -28,6 +28,10 @@ export function buildOutputItem(
   if (ctx.insuranceDiscrepancy) {
     missing_info.push(`INSURANCE DISCREPANCY: ${ctx.insuranceDiscrepancy}`);
   }
+  // Surface an unverifiable patient match for the reviewer (no chart attached).
+  if (ctx.identity && (ctx.identity.verdict === "conflict" || ctx.identity.verdict === "ambiguous")) {
+    missing_info.push(`IDENTITY (verify): ${ctx.identity.reason}`);
+  }
 
   return {
     item_id: item.id,
@@ -70,6 +74,8 @@ function recommendedAction(
       return "Billing should review out-of-network benefits with the family before any slot hold or scheduling.";
     case "clinical_routing":
       return "Route the clinical question to a clinician/evaluation; do not answer it over message.";
+    case "verify_identity":
+      return "Verify the patient's identity with the family before attaching to any chart or scheduling; do not hold a slot until identity is confirmed.";
     case "intake_missing_info":
       return `Intake should obtain missing information (${facts.missing_info.join(", ")}) before scheduling.`;
     case "same_day_reschedule":

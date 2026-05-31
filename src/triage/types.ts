@@ -1,4 +1,5 @@
 import type { Classification, Discipline, Urgency } from "../types.js";
+import type { IdentityResult } from "./identity.js";
 
 /**
  * Coarse intent buckets derived from an inbox item. These drive the
@@ -27,6 +28,7 @@ export interface Facts {
   dob: string | null; // ISO date if a real DOB was found
   age: string | null; // free-text age if only an age was given
   parent_contact: string | null;
+  guardian_name: string | null; // labeled parent/guardian name, used to corroborate identity
   discipline: Discipline[] | null;
   diagnosis_or_concern: string | null;
   payer: string | null;
@@ -73,6 +75,7 @@ export type DraftScenario =
   | "clinical_routing"
   | "intake_missing_info"
   | "same_day_reschedule"
+  | "verify_identity"
   | "acknowledge";
 
 export interface InsuranceResult {
@@ -90,6 +93,10 @@ export interface InsuranceResult {
 export interface DecisionContext {
   patientFound: boolean;
   patientId: string | null;
+  /** Full identity verdict for the search_patient result. */
+  identity: IdentityResult | null;
+  /** Convenience flag: true only when identity.verdict === "confirmed". */
+  identityVerified: boolean;
   insurance: InsuranceResult | null;
   insuranceDiscrepancy: string | null;
   slotsFound: number;

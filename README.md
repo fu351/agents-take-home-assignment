@@ -172,9 +172,18 @@ Production eval should include adversarial draft prompts and a clinical-advice v
 
 ### Wrong patient match
 
-A wrong patient match could route work or communication incorrectly. The prototype searches with available name and DOB, treats no match as new/unverified, and keeps every output human-reviewable.
+A wrong patient match could attach work or a family-facing message to the wrong child's chart. The prototype now **closes the loop instead of trusting the first row** `search_patient` returns. A deterministic verifier (`src/triage/identity.ts`) compares the referral's name and DOB against every returned record and assigns one of four verdicts:
 
-Production should add confidence scoring, household matching, duplicate detection, and stricter identity checks before outbound messaging.
+- **none** (no record) — treated as a new/unverified patient; a slot may still be held under a `new:` reference.
+- **confirmed** (exactly one record whose DOB equals the referral DOB and whose name corroborates, tolerating suffixes like "Jr." and extra middle names) — the chart id is trusted and the in-network flow behaves as before.
+- **conflict** (a record came back but the referral DOB disagrees with it) — likely a different child with the same name; the chart id is **not** trusted.
+- **ambiguous** (more than one record, or a single name-only match with no DOB to corroborate — including age-only referrals, since a free-text age cannot be reconciled to an exact DOB) — identity is unverified.
+
+The guardian/parent name acts as a **second identifier that resolves slight ambiguity** (it never overrides a contradiction): a corroborating guardian can narrow several matches to a single record, and when the referral has no DOB, a matching child name **and** guardian name together resolve the match to confirmed. A guardian that matches while the DOB disagrees is treated as a likely **sibling**, so the **conflict** verdict still stands — a matching guardian never upgrades a DOB mismatch.
+
+For **conflict** and **ambiguous**, the agent never calls `hold_slot` and never attaches the existing `patient_id`; it creates an identity-verification task, surfaces an `IDENTITY (verify): …` flag in `missing_info`, and the family-facing draft and `recommended_next_action` are routed to a neutral "verify identity before scheduling" message that does not claim a confirmed identity or a booking. Every item remains human-reviewed.
+
+Production should still add confidence scoring, household/guardian matching, duplicate detection, fuzzy name matching, and a real master-patient-index lookup before any outbound message — the prototype's verifier is a structural name/DOB check over a stub, not a probabilistic identity service.
 
 ### Wrong discipline or wrong slot hold
 
@@ -243,7 +252,7 @@ The included tests are regression checks for the riskiest gates, not a complete 
 
 3. **Cross-item duplicate detection.** Flag likely duplicate messages about the same child across voicemail, portal, email, and fax while still producing one output per item.
 
-4. **Stronger patient matching.** Add confidence scoring using name, DOB, guardian, phone, email, and household relationships. Surface ambiguous matches explicitly.
+4. **Stronger patient matching.** v2 added a deterministic name/DOB verifier that already surfaces conflict/ambiguous matches explicitly and blocks holds on them (see §4). The next step is richer confidence scoring using guardian, phone, email, and household relationships, plus fuzzy name matching against a real master patient index.
 
 5. **Better extraction for messy voicemails.** Improve deterministic extraction of names, DOBs, service lines, payer, member ID, language, and dates from unlabeled prose.
 

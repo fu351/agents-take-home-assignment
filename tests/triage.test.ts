@@ -13,8 +13,9 @@ import {
   search_patient,
   withItemContext,
 } from "../src/tools.js";
-import type { InboxItem, ItemOutput } from "../src/types.js";
-import { assertNoClinicalAdvice } from "../src/triage/draftGuard.js";
+import type { InboxItem, ItemOutput, Patient } from "../src/types.js";
+import { assertNoClinicalAdvice, screenDraft } from "../src/triage/draftGuard.js";
+import { verifyIdentity } from "../src/triage/identity.js";
 import { extractFactsDeterministic } from "../src/triage/extract.js";
 import { classify } from "../src/triage/classify.js";
 import { assessSafety } from "../src/triage/safety.js";
@@ -305,6 +306,250 @@ test("no-key full inbox integration emits one output per input, uses relevant to
   assert.equal(validate.status, 0, validate.stderr || validate.stdout);
 });
 
+// ---- Group A: verifyIdentity unit tests (generalized; no stub coupling). ----
+
+function patient(over: Partial<Patient> = {}): Patient {
+  return {
+    patient_id: "pat_x",
+    name: "Sam Rivers",
+    dob: "2015-05-05",
+    guardian_name: "Guardian",
+    status: "active",
+    ...over,
+  };
+}
+
+test("verifyIdentity: zero matches is 'none' and trusts no chart", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: "2015-05-05", age: null }, []);
+  assert.equal(r.verdict, "none");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: single exact name+DOB is 'confirmed'", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: "2015-05-05", age: null }, [patient()]);
+  assert.equal(r.verdict, "confirmed");
+  assert.equal(r.patientId, "pat_x");
+});
+
+test("verifyIdentity: generational suffix still corroborates ('Jr.')", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2015-05-05", age: null },
+    [patient({ name: "Sam Rivers Jr." })],
+  );
+  assert.equal(r.verdict, "confirmed");
+});
+
+test("verifyIdentity: extra middle name still corroborates", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2015-05-05", age: null },
+    [patient({ name: "Sam Andrew Rivers" })],
+  );
+  assert.equal(r.verdict, "confirmed");
+});
+
+test("verifyIdentity: DOB mismatch is 'conflict' and trusts no chart", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2010-01-01", age: null },
+    [patient({ dob: "2015-05-05" })],
+  );
+  assert.equal(r.verdict, "conflict");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: name-only match (no DOB) is 'ambiguous'", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: null, age: null }, [patient()]);
+  assert.equal(r.verdict, "ambiguous");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: age-only match (no ISO DOB) is 'ambiguous'", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: null, age: "5 years old" }, [patient()]);
+  assert.equal(r.verdict, "ambiguous");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: multiple matches is 'ambiguous'", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: "2015-05-05", age: null }, [
+    patient({ patient_id: "a" }),
+    patient({ patient_id: "b", dob: "2015-05-05" }),
+  ]);
+  assert.equal(r.verdict, "ambiguous");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: a DOB conflict wins over multiplicity", () => {
+  const r = verifyIdentity({ name: "Sam Rivers", dob: "2010-01-01", age: null }, [
+    patient({ patient_id: "a", dob: "2015-05-05" }),
+    patient({ patient_id: "b", dob: "2016-06-06" }),
+  ]);
+  assert.equal(r.verdict, "conflict");
+});
+
+test("verifyIdentity: guardian name resolves a name-only match to confirmed", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: null, age: null, guardian: "Pat Rivers" },
+    [patient({ guardian_name: "Pat Rivers" })],
+  );
+  assert.equal(r.verdict, "confirmed");
+  assert.equal(r.patientId, "pat_x");
+});
+
+test("verifyIdentity: a non-matching guardian leaves a name-only match ambiguous", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: null, age: null, guardian: "Someone Else" },
+    [patient({ guardian_name: "Pat Rivers" })],
+  );
+  assert.equal(r.verdict, "ambiguous");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: guardian narrows multiple matches to a single confirmed record", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2015-05-05", age: null, guardian: "Pat Rivers" },
+    [
+      patient({ patient_id: "a", guardian_name: "Other Person" }),
+      patient({ patient_id: "b", guardian_name: "Pat Rivers" }),
+    ],
+  );
+  assert.equal(r.verdict, "confirmed");
+  assert.equal(r.patientId, "b");
+});
+
+test("verifyIdentity: guardian that matches several records cannot narrow → ambiguous", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2015-05-05", age: null, guardian: "Pat Rivers" },
+    [
+      patient({ patient_id: "a", guardian_name: "Pat Rivers" }),
+      patient({ patient_id: "b", guardian_name: "Pat Rivers" }),
+    ],
+  );
+  assert.equal(r.verdict, "ambiguous");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: a matching guardian never overrides a DOB conflict (sibling guard)", () => {
+  const r = verifyIdentity(
+    { name: "Sam Rivers", dob: "2010-01-01", age: null, guardian: "Pat Rivers" },
+    [patient({ guardian_name: "Pat Rivers", dob: "2015-05-05" })],
+  );
+  assert.equal(r.verdict, "conflict");
+  assert.equal(r.patientId, null);
+});
+
+test("verifyIdentity: guardian resolves a DOB-match whose child name differs", () => {
+  const r = verifyIdentity(
+    { name: "Samuel Rivera", dob: "2015-05-05", age: null, guardian: "Pat Rivers" },
+    [patient({ name: "Sam Rivers", guardian_name: "Pat Rivers" })],
+  );
+  assert.equal(r.verdict, "confirmed");
+  assert.equal(r.patientId, "pat_x");
+});
+
+// ---- Group B: end-to-end identity gating through the real search_patient stub. ----
+
+function identityFlag(output: ItemOutput): string | undefined {
+  return output.missing_info.find((m) => m.startsWith("IDENTITY (verify)"));
+}
+
+function searchSummary(output: ItemOutput): string {
+  return output.tools_called.find((c) => c.name === "search_patient")?.result_summary ?? "";
+}
+
+test("confirmed match (name + matching DOB) still verifies and holds an in-network slot", async () => {
+  const item = makeItem(
+    "Child: Mateo Ramirez. DOB: 2019-03-15. Parent: Carla Mendez, 555-0104. Insurance: Aetna PPO. Member ID: AET-9910. Concern: toe walking. Please schedule a PT evaluation.",
+    { channel: "fax_referral" },
+  );
+
+  const [output] = await runWithTrace([item]);
+  const names = toolNames(output);
+
+  assert.equal(output.urgency, "P2");
+  assert.ok(searchSummary(output).includes("1 patient match"));
+  assert.ok(names.includes("verify_insurance"));
+  assert.ok(names.includes("find_slots"));
+  assert.ok(names.includes("hold_slot"));
+  assert.match(output.recommended_next_action, /Confirm the reviewable hold/);
+  assert.equal(identityFlag(output), undefined);
+});
+
+test("DOB conflict (same name, wrong DOB) blocks the hold and flags identity", async () => {
+  // The stub matches "Noah Patel" on name alone, so a different DOB still
+  // returns the existing pat_noah_patel (dob 2017-11-02) — a wrong-child match.
+  const item = makeItem(
+    "Child: Noah Patel. DOB: 2010-01-01. Parent: Sam Ray, 555-2000. Insurance: Aetna PPO. Member ID: AET-2. Concern: fine motor delay. Please schedule an OT evaluation.",
+    { channel: "fax_referral" },
+  );
+
+  const [output] = await runWithTrace([item]);
+  const names = toolNames(output);
+
+  assert.ok(searchSummary(output).includes("1 patient match"));
+  assert.equal(names.includes("hold_slot"), false);
+  assert.ok(identityFlag(output), "expected an IDENTITY (verify) flag");
+  assert.match(output.recommended_next_action, /verify the patient's identity/i);
+  const draft = output.draft_reply ?? "";
+  // The conflict draft must not claim a confirmed identity, and must pass the
+  // full production screen (which permits the negated "no appointment has been
+  // booked" disclaimer but rejects any affirmative booked/sent claim).
+  assert.doesNotMatch(draft, /existing (file|patient)|located your/i);
+  assert.equal(screenDraft(draft, "en").ok, true);
+  assert.equal(assertNoClinicalAdvice(draft).ok, true);
+});
+
+test("name-only match (no DOB to corroborate) is ambiguous and holds no slot", async () => {
+  // No DOB anywhere in the referral; the stub still matches "Noah Patel" on
+  // name alone, so the agent must treat the identity as unverified.
+  const item = makeItem(
+    "Child: Noah Patel. Parent: Sam Ray, 555-2001. Insurance: Aetna PPO. Member ID: AET-3. Concern: fine motor delay. Please schedule an OT evaluation.",
+    { channel: "fax_referral" },
+  );
+
+  const [output] = await runWithTrace([item]);
+  const names = toolNames(output);
+
+  assert.ok(searchSummary(output).includes("1 patient match"));
+  assert.equal(names.includes("hold_slot"), false);
+  assert.ok(identityFlag(output), "expected an IDENTITY (verify) flag");
+  assert.match(output.recommended_next_action, /verify the patient's identity/i);
+  assert.equal(assertNoClinicalAdvice(output.draft_reply ?? "").ok, true);
+});
+
+test("brand-new patient (no match) still holds a slot under a new: reference", async () => {
+  const item = makeItem(
+    "Child: Tessa Vale. DOB: 2019-07-07. Parent: Robin Vale, 555-2002. Insurance: Aetna PPO. Member ID: AET-4. Concern: fine motor delay. Please schedule an OT evaluation.",
+    { channel: "fax_referral" },
+  );
+
+  const [output] = await runWithTrace([item]);
+  const names = toolNames(output);
+
+  assert.ok(searchSummary(output).includes("0 patient matches"));
+  assert.ok(names.includes("hold_slot"));
+  const hold = output.tools_called.find((c) => c.name === "hold_slot");
+  assert.match(String(hold?.args.patient_ref), /^new:/);
+  assert.equal(identityFlag(output), undefined);
+});
+
+test("guardian name resolves a name-only match and re-enables the hold", async () => {
+  // Same name-only Noah Patel referral as the ambiguous case, but now the
+  // referral names the matching guardian, which corroborates the chart.
+  const item = makeItem(
+    "Child: Noah Patel. Parent: Anita Patel. Insurance: Aetna PPO. Member ID: AET-5. Concern: fine motor delay. Please schedule an OT evaluation.",
+    { channel: "fax_referral" },
+  );
+
+  const [output] = await runWithTrace([item]);
+  const names = toolNames(output);
+
+  assert.ok(searchSummary(output).includes("1 patient match"));
+  assert.ok(names.includes("hold_slot"));
+  const hold = output.tools_called.find((c) => c.name === "hold_slot");
+  assert.match(String(hold?.args.patient_ref), /^pat_/);
+  assert.equal(identityFlag(output), undefined);
+  assert.match(output.recommended_next_action, /Confirm the reviewable hold/);
+});
+
 function classifyBody(
   body: string,
 ): { facts: Facts; safety: SafetyAssessment; classification: ClassificationResult } {
@@ -365,6 +610,7 @@ function baseFacts(): Facts {
     dob: null,
     age: null,
     parent_contact: null,
+    guardian_name: null,
     discipline: null,
     diagnosis_or_concern: null,
     payer: null,
@@ -385,6 +631,8 @@ function baseContext(): DecisionContext {
   return {
     patientFound: false,
     patientId: null,
+    identity: null,
+    identityVerified: false,
     insurance: null,
     insuranceDiscrepancy: null,
     slotsFound: 0,

@@ -142,6 +142,12 @@ export function safeTemplate(scenario: DraftScenario, facts: Facts): string | nu
         `Gracias por avisarnos sobre la cita de ${name} de hoy. Un miembro del equipo se comunicará pronto para reprogramarla. Este es un borrador para revisión del personal.`,
         lang,
       );
+    case "verify_identity":
+      return ES(
+        `Thank you for your message regarding ${name}. Before we can schedule anything, a team member needs to confirm a few identifying details to make sure we have the correct record on file. Someone will reach out shortly to verify this with you. This is a draft for staff review; no appointment has been booked.`,
+        `Gracias por su mensaje sobre ${name}. Antes de programar una cita, un miembro de nuestro equipo necesita confirmar algunos datos para asegurarse de que tenemos el registro correcto. Alguien se comunicará pronto para verificarlo con usted. Este es un borrador para revisión del personal; no se ha reservado ninguna cita.`,
+        lang,
+      );
     case "acknowledge":
       return ES(
         `Thank you for your message regarding ${name}. We have received it and a team member will review and follow up as needed. This is a draft for staff review.`,
