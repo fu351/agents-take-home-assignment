@@ -11,6 +11,7 @@ import {
 import type { Assignee, InboxItem } from "../types.js";
 import { generateDraftLLM, isLLMEnabled } from "./llm.js";
 import { ensureDisclaimer, safeTemplate, screenDraft } from "./draftGuard.js";
+import { verifyIdentity } from "./identity.js";
 import type {
   ClassificationResult,
   DecisionContext,
@@ -34,6 +35,8 @@ export async function orchestrateTools(
   const ctx: DecisionContext = {
     patientFound: false,
     patientId: null,
+    identity: null,
+    identityVerified: false,
     insurance: null,
     insuranceDiscrepancy: null,
     slotsFound: 0,
@@ -48,16 +51,42 @@ export async function orchestrateTools(
   };
 
   // ---- Identity grounding first, for EVERY item (who is this about?). ----
+  // We do NOT blindly trust the first returned record: verifyIdentity compares
+  // the referral's name/DOB against every match and only "confirms" a chart
+  // when a real DOB corroborates it. A confirmed id may flow into a hold; a
+  // conflict/ambiguous match must not.
   const patient = await search_patient({
     name: facts.child_name ?? undefined,
     dob: facts.dob ?? undefined,
   });
-  if (patient.data.length > 0) {
-    ctx.patientFound = true;
-    ctx.patientId = patient.data[0].patient_id;
-    ctx.rationale.push(`search_patient → existing patient ${patient.data[0].name}.`);
-  } else {
-    ctx.rationale.push("search_patient → no existing record (treat as new/unverified).");
+  const identity = verifyIdentity(
+    { name: facts.child_name, dob: facts.dob, age: facts.age, guardian: facts.guardian_name },
+    patient.data,
+  );
+  ctx.identity = identity;
+  ctx.patientFound = patient.data.length > 0;
+  ctx.identityVerified = identity.verdict === "confirmed";
+  ctx.patientId = identity.verdict === "confirmed" ? identity.patientId : null;
+
+  switch (identity.verdict) {
+    case "none":
+      ctx.rationale.push("search_patient → no existing record (treat as new/unverified).");
+      break;
+    case "confirmed":
+      ctx.rationale.push(
+        `search_patient → confirmed existing patient (name + DOB match): ${identity.patientId}.`,
+      );
+      break;
+    case "conflict":
+      ctx.rationale.push(
+        `search_patient → returned a record but the referral DOB conflicts with it; NOT trusting the chart. ${identity.reason}`,
+      );
+      break;
+    case "ambiguous":
+      ctx.rationale.push(
+        `search_patient → match not verifiable from the referral (no corroborating DOB / multiple matches); NOT attaching to a chart. ${identity.reason}`,
+      );
+      break;
   }
 
   // ---- P0 safeguarding: ground in policy, escalate, get out of the way. ----
@@ -184,14 +213,20 @@ export async function orchestrateTools(
     }
 
     // In-network: proceed to scheduling support if discipline + booking intent are clear.
+    // A slot may only be HELD when identity is safe to attach to: a confirmed
+    // existing chart, or a clean new patient (no match). A conflict/ambiguous
+    // match must never hold a slot under a possibly-wrong chart.
     ctx.rationale.push(`verify_insurance → ${ctx.insurance.status}.`);
+    const identitySafe =
+      ctx.identity?.verdict === "none" || ctx.identity?.verdict === "confirmed";
+
     if (facts.discipline && facts.discipline.length === 1 && facts.wantsBooking) {
       const slots = await find_slots({
         discipline: facts.discipline[0],
         language: facts.language,
       });
       ctx.slotsFound = slots.data.length;
-      if (slots.data.length > 0) {
+      if (slots.data.length > 0 && identitySafe) {
         const slot = slots.data[0];
         const held = await hold_slot({
           slot_id: slot.slot_id,
@@ -200,6 +235,10 @@ export async function orchestrateTools(
         ctx.heldSlot = { provider_name: slot.provider_name, start: slot.start };
         ctx.rationale.push(
           `find_slots(${facts.discipline[0]}, ${facts.language}) → ${slots.data.length} options; placed a reviewable hold (${held.data.hold_id}) on the earliest with ${slot.provider_name}.`,
+        );
+      } else if (slots.data.length > 0 && !identitySafe) {
+        ctx.rationale.push(
+          `find_slots(${facts.discipline[0]}, ${facts.language}) → ${slots.data.length} options found, but identity is ${ctx.identity?.verdict}; did NOT hold a slot (avoids attaching to the wrong chart). Routed to identity verification.`,
         );
       } else {
         ctx.rationale.push(`find_slots(${facts.discipline[0]}) → 0 matches; no hold, will offer waitlist on review.`);
@@ -210,14 +249,18 @@ export async function orchestrateTools(
 
     const task = await create_task({
       assignee: "intake",
-      title: `Confirm and schedule evaluation for ${facts.child_name ?? item.subject}`,
+      title: identitySafe
+        ? `Confirm and schedule evaluation for ${facts.child_name ?? item.subject}`
+        : `Verify patient identity before scheduling for ${facts.child_name ?? item.subject}`,
       due: nextBusinessDue(item, 2),
-      notes: ctx.heldSlot
-        ? `Reviewable hold placed with ${ctx.heldSlot.provider_name} at ${ctx.heldSlot.start}. Confirm with family and finalize.`
-        : "Confirm details with family and schedule an evaluation on review.",
+      notes: !identitySafe
+        ? `Identity could not be verified (${ctx.identity?.verdict}): ${ctx.identity?.reason} Do NOT attach to an existing chart or hold a slot until identity is confirmed with the family.`
+        : ctx.heldSlot
+          ? `Reviewable hold placed with ${ctx.heldSlot.provider_name} at ${ctx.heldSlot.start}. Confirm with family and finalize.`
+          : "Confirm details with family and schedule an evaluation on review.",
     });
     ctx.task_ids.push(task.data.task_id);
-    ctx.draftScenario = "scheduling";
+    ctx.draftScenario = identitySafe ? "scheduling" : "verify_identity";
     await finalizeDraft(item, facts, ctx);
     return ctx;
   }

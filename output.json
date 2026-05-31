@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-30T02:03:58.957Z",
+  "generated_at": "2026-05-31T03:25:19.026Z",
   "summary": {
     "total_items": 8,
     "p0_count": 1,
@@ -26,7 +26,7 @@
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9Y398FZEH7RSQYWXQECWY",
+          "call_id": "01KSY0ZVZWY7PNZTK899N5GGQY",
           "name": "search_patient",
           "args": {
             "dob": "2018-09-04",
@@ -35,7 +35,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9Y39AR4J8QXS4X3EHF7EC",
+          "call_id": "01KSY0ZW00RY7HA22F7YJ41JBX",
           "name": "verify_insurance",
           "args": {
             "member_id": "BCBS-884200",
@@ -44,7 +44,7 @@
           "result_summary": "insurance status: in_network (Blue Cross Blue Shield PPO)"
         },
         {
-          "call_id": "01KSV9Y39BWF9P9Q6TZCDH0J78",
+          "call_id": "01KSY0ZW02A8BYE7RH9JDYH8BG",
           "name": "find_slots",
           "args": {
             "discipline": "SLP",
@@ -53,16 +53,16 @@
           "result_summary": "4 matching slots; earliest 2026-04-29T09:00:00-07:00 with Maya Chen, MS CCC-SLP"
         },
         {
-          "call_id": "01KSV9Y39BAGV2G9BVEYX7XA7M",
+          "call_id": "01KSY0ZW0375HNGWRCECF5ZTNT",
           "name": "hold_slot",
           "args": {
             "patient_ref": "new:Emma Lee",
             "slot_id": "slot_slp_maya_2026_04_29_0900"
           },
-          "result_summary": "created pending_review hold hold_01ksv9y39b4xkeg2ekan376c3v until 2026-05-30T02:33:15.627Z"
+          "result_summary": "created pending_review hold hold_01ksy0zw03jq6gatd5vwg1jwc4 until 2026-05-31T03:54:39.811Z"
         },
         {
-          "call_id": "01KSV9Y39CCWV731YFA3DMP83C",
+          "call_id": "01KSY0ZW04BJ3DR0GJ2YMH8J30",
           "name": "create_task",
           "args": {
             "assignee": "intake",
@@ -70,27 +70,27 @@
             "notes": "Reviewable hold placed with Maya Chen, MS CCC-SLP at 2026-04-29T09:00:00-07:00. Confirm with family and finalize.",
             "title": "Confirm and schedule evaluation for Emma Lee"
           },
-          "result_summary": "created task task_01ksv9y39cva91cvp3rbk91zd9 for intake"
+          "result_summary": "created task task_01ksy0zw04jcarsfqydhwgq1a7 for intake"
         },
         {
-          "call_id": "01KSV9Y6HAN0GV8RAQ5M87688R",
+          "call_id": "01KSY0ZZH1NRB86MBP5815W1BJ",
           "name": "draft_message",
           "args": {
-            "body": "Dear Emma's family,\n\nThank you so much for reaching out to us — we're glad you're here! We've found some available appointments with Maya Chen, MS CCC-SLP, and have placed a tentative hold on the earliest opening for your review. A team member will confirm availability, gather a few details to get Emma set up as a new patient, and reach out to finalize everything with you shortly.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+            "body": "Dear Emma's family,\n\nThank you so much for reaching out to us — we're so glad you contacted our practice! We have found some available Speech-Language Pathology appointment times for Emma, and our team has noted a potential earliest opening with Maya Chen, MS CCC-SLP for staff to review before anything is confirmed. A member of our front desk team will be in touch shortly to verify Emma's information, confirm insurance details, and finalize scheduling with you.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
             "channel": "email",
             "language": "en",
             "recipient": "daniel.lee@example.com"
           },
-          "result_summary": "created draft draft_01ksv9y6ha2v3cc0mzvvsanh73 (email, en)"
+          "result_summary": "created draft draft_01ksy0zzh1kdwak3vh36j88s6t (email, en)"
         }
       ],
       "recommended_next_action": "Confirm the reviewable hold with the family and finalize the evaluation appointment.",
-      "draft_reply": "Dear Emma's family,\n\nThank you so much for reaching out to us — we're glad you're here! We've found some available appointments with Maya Chen, MS CCC-SLP, and have placed a tentative hold on the earliest opening for your review. A team member will confirm availability, gather a few details to get Emma set up as a new patient, and reach out to finalize everything with you shortly.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+      "draft_reply": "Dear Emma's family,\n\nThank you so much for reaching out to us — we're so glad you contacted our practice! We have found some available Speech-Language Pathology appointment times for Emma, and our team has noted a potential earliest opening with Maya Chen, MS CCC-SLP for staff to review before anything is confirmed. A member of our front desk team will be in touch shortly to verify Emma's information, confirm insurance details, and finalize scheduling with you.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
       "task_ids": [
-        "task_01ksv9y39cva91cvp3rbk91zd9"
+        "task_01ksy0zw04jcarsfqydhwgq1a7"
       ],
       "escalation": null,
-      "decision_rationale": "P2 / new_referral. search_patient → no existing record (treat as new/unverified). verify_insurance → in_network. find_slots(SLP, en) → 4 options; placed a reviewable hold (hold_01ksv9y39b4xkeg2ekan376c3v) on the earliest with Maya Chen, MS CCC-SLP."
+      "decision_rationale": "P2 / new_referral. search_patient → no existing record (treat as new/unverified). verify_insurance → in_network. find_slots(SLP, en) → 4 options; placed a reviewable hold (hold_01ksy0zw03jq6gatd5vwg1jwc4) on the earliest with Maya Chen, MS CCC-SLP."
     },
     {
       "item_id": "item_2",
@@ -104,7 +104,7 @@
         "discipline": [
           "SLP"
         ],
-        "diagnosis_or_concern": "speech/language delay or concern; increased clinginess",
+        "diagnosis_or_concern": "speech/language delay or concern; increased clinginess noted",
         "payer": null,
         "member_id": null
       },
@@ -113,7 +113,7 @@
       ],
       "tools_called": [
         {
-          "call_id": "01KSV9YBA72XAZAHRK5JPE0XCN",
+          "call_id": "01KSY1040PFVKYSBEMGAN603VM",
           "name": "search_patient",
           "args": {
             "name": "Leo Gomez"
@@ -121,7 +121,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9YBA8PXHADV5S885Q3T16",
+          "call_id": "01KSY1040Q0AYDSNX6ADQSRHNY",
           "name": "lookup_policy",
           "args": {
             "topic": "safeguarding"
@@ -129,17 +129,17 @@
           "result_summary": "2 policy snippets for safeguarding"
         },
         {
-          "call_id": "01KSV9YBA9H8FGEK9KZ2A6C4NH",
+          "call_id": "01KSY1040QP3RZBMC0VE1SJZTE",
           "name": "escalate",
           "args": {
             "item_id": "item_2",
-            "reason": "Suspected safeguarding concern: Possible physical harm by a caregiver; Parent states the child's father 'started getting rough with him during weekends,' which is a potential indicator of physical abuse or unsafe caregiving requiring mandatory reporter review.; Child has become 'more clingy,' which may be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common childhood behavior.",
+            "reason": "Suspected safeguarding concern: Possible physical harm by a caregiver; Parent states father has been 'getting rough' with the child during weekend visits, which may indicate physical abuse or unsafe caregiving requiring mandatory reporter review.; Child has become more clingy, which could be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common reaction to many stressors.",
             "severity": "P0"
           },
-          "result_summary": "created escalation esc_01ksv9yba9fqcm0n9674pyj48a severity P0"
+          "result_summary": "created escalation esc_01ksy1040qswg2td5b71cqsrjm severity P0"
         },
         {
-          "call_id": "01KSV9YBA9EPBQKAC2DEQVDBJ1",
+          "call_id": "01KSY1040R3850DH2NWGBGTDRA",
           "name": "create_task",
           "args": {
             "assignee": "clinical_lead",
@@ -147,19 +147,19 @@
             "notes": "Possible safeguarding disclosure. Do NOT contact the family with reassurance. Escalate per safeguarding policy and follow mandated-reporter steps.",
             "title": "Same-hour safeguarding review: Leo Gomez"
           },
-          "result_summary": "created task task_01ksv9yba9npetcj31s24a2mxc for clinical_lead"
+          "result_summary": "created task task_01ksy1040rkfwxdz4xpt234ft0 for clinical_lead"
         }
       ],
       "recommended_next_action": "Escalate to the clinical lead for same-hour safeguarding review and mandated-reporter steps. Do not contact the family with reassurance.",
       "draft_reply": null,
       "task_ids": [
-        "task_01ksv9yba9npetcj31s24a2mxc"
+        "task_01ksy1040rkfwxdz4xpt234ft0"
       ],
       "escalation": {
-        "reason": "Suspected safeguarding concern: Possible physical harm by a caregiver; Parent states the child's father 'started getting rough with him during weekends,' which is a potential indicator of physical abuse or unsafe caregiving requiring mandatory reporter review.; Child has become 'more clingy,' which may be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common childhood behavior.",
+        "reason": "Suspected safeguarding concern: Possible physical harm by a caregiver; Parent states father has been 'getting rough' with the child during weekend visits, which may indicate physical abuse or unsafe caregiving requiring mandatory reporter review.; Child has become more clingy, which could be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common reaction to many stressors.",
         "severity": "P0"
       },
-      "decision_rationale": "P0 / safeguarding. Hard safety signal (Possible physical harm by a caregiver (rule); Parent states the child's father 'started getting rough with him during weekends,' which is a potential indicator of physical abuse or unsafe caregiving requiring mandatory reporter review. (llm); Child has become 'more clingy,' which may be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common childhood behavior. (llm)). search_patient → no existing record (treat as new/unverified). Hard safety signal → P0; cited the safeguarding policy, escalated to the clinical lead, and created a same-hour review task; deliberately produced no parent draft and ran no scheduling/billing steps."
+      "decision_rationale": "P0 / safeguarding. Hard safety signal (Possible physical harm by a caregiver (rule); Parent states father has been 'getting rough' with the child during weekend visits, which may indicate physical abuse or unsafe caregiving requiring mandatory reporter review. (llm); Child has become more clingy, which could be a behavioral stress response potentially consistent with an unsafe home environment, though it is also a common reaction to many stressors. (llm)). search_patient → no existing record (treat as new/unverified). Hard safety signal → P0; cited the safeguarding policy, escalated to the clinical lead, and created a same-hour review task; deliberately produced no parent draft and ran no scheduling/billing steps."
     },
     {
       "item_id": "item_3",
@@ -180,7 +180,7 @@
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9YDJFH7KA6DF6QT2BXEWZ",
+          "call_id": "01KSY1064FKPRCHHT77X8Z6172",
           "name": "search_patient",
           "args": {
             "dob": "2020-02-11",
@@ -189,7 +189,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9YDJF6ZMGQHM9X0G3PSHZ",
+          "call_id": "01KSY1064GE5D6373P3SSQXJ8J",
           "name": "verify_insurance",
           "args": {
             "member_id": "KSR-4471",
@@ -198,7 +198,7 @@
           "result_summary": "insurance status: out_of_network (Kaiser HMO)"
         },
         {
-          "call_id": "01KSV9YDJGXDKHPGZ1425Y0WZX",
+          "call_id": "01KSY1064G07T5K6T1TES7YWKJ",
           "name": "lookup_policy",
           "args": {
             "topic": "insurance"
@@ -206,7 +206,7 @@
           "result_summary": "3 policy snippets for insurance"
         },
         {
-          "call_id": "01KSV9YDJHYCBN3KKZX02GRBA3",
+          "call_id": "01KSY1064HRMFYGZPSVQNVG0JZ",
           "name": "create_task",
           "args": {
             "assignee": "billing",
@@ -214,24 +214,24 @@
             "notes": "verify_insurance returned out_of_network for Kaiser HMO. Hold all scheduling until a benefits conversation happens.",
             "title": "Benefits conversation for Owen Brooks"
           },
-          "result_summary": "created task task_01ksv9ydjgashjz1evmygdxd6e for billing"
+          "result_summary": "created task task_01ksy1064hezt6bg7e5zmxg0yy for billing"
         },
         {
-          "call_id": "01KSV9YGY6X52P3AFC5YQY17DH",
+          "call_id": "01KSY109M6GHG54E0GJVWFYWRF",
           "name": "draft_message",
           "args": {
-            "body": "Dear Brooks Family, thank you so much for reaching out about Owen — we're glad you contacted us! Because our team was unable to verify in-network benefits with your current insurance plan, no appointment has been scheduled yet; a member of our front desk staff will need to review this message and reach out to you directly to walk through your coverage options before any next steps are confirmed. We look forward to connecting with you soon.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+            "body": "Dear Brooks Family, thank you so much for reaching out about Owen — we're glad you contacted us! Because Owen appears to be new to our practice, our team will need to verify his information and review your insurance benefits before we can discuss scheduling, and a staff member will be in touch shortly to walk you through your coverage options. Please note that no appointment has been booked yet and this message has not been sent — it is a draft for our front-desk team to review before any response goes out.",
             "channel": "email",
             "language": "en",
             "recipient": "rachel.brooks@example.com"
           },
-          "result_summary": "created draft draft_01ksv9ygy5xa7432rx2yjxfqa0 (email, en)"
+          "result_summary": "created draft draft_01ksy109m6zknb5j10xgh8amsy (email, en)"
         }
       ],
       "recommended_next_action": "Billing should review out-of-network benefits with the family before any slot hold or scheduling.",
-      "draft_reply": "Dear Brooks Family, thank you so much for reaching out about Owen — we're glad you contacted us! Because our team was unable to verify in-network benefits with your current insurance plan, no appointment has been scheduled yet; a member of our front desk staff will need to review this message and reach out to you directly to walk through your coverage options before any next steps are confirmed. We look forward to connecting with you soon.\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+      "draft_reply": "Dear Brooks Family, thank you so much for reaching out about Owen — we're glad you contacted us! Because Owen appears to be new to our practice, our team will need to verify his information and review your insurance benefits before we can discuss scheduling, and a staff member will be in touch shortly to walk you through your coverage options. Please note that no appointment has been booked yet and this message has not been sent — it is a draft for our front-desk team to review before any response goes out.",
       "task_ids": [
-        "task_01ksv9ydjgashjz1evmygdxd6e"
+        "task_01ksy1064hezt6bg7e5zmxg0yy"
       ],
       "escalation": null,
       "decision_rationale": "P2 / new_referral. search_patient → no existing record (treat as new/unverified). verify_insurance → out_of_network, so NO slot held; cited insurance policy, created a billing benefits task, and drafted a benefits-conversation reply."
@@ -255,7 +255,7 @@
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9YK6PZADA0JRV33Z78T06",
+          "call_id": "01KSY10C01PBHM62AJ9T7GGM1W",
           "name": "search_patient",
           "args": {
             "dob": "2019-03-15",
@@ -264,7 +264,7 @@
           "result_summary": "1 patient match: Mateo Ramirez Jr. (2019-03-15)"
         },
         {
-          "call_id": "01KSV9YK6QAKQ509KTEGWRA4RT",
+          "call_id": "01KSY10C02SA1NHX6YNKWV91DA",
           "name": "verify_insurance",
           "args": {
             "member_id": "AET-9910",
@@ -273,7 +273,7 @@
           "result_summary": "insurance status: in_network (Aetna PPO)"
         },
         {
-          "call_id": "01KSV9YK6R21JXFNBZVGYXB542",
+          "call_id": "01KSY10C021548TQR87PB3Z9C3",
           "name": "find_slots",
           "args": {
             "discipline": "PT",
@@ -282,16 +282,16 @@
           "result_summary": "2 matching slots; earliest 2026-04-29T13:00:00-07:00 with Priya Shah, PT, DPT"
         },
         {
-          "call_id": "01KSV9YK6SQHR8KJ6E947GQA7Q",
+          "call_id": "01KSY10C0384BQDBNX6GJ2YPKG",
           "name": "hold_slot",
           "args": {
             "patient_ref": "pat_mateo_ramirez_jr",
             "slot_id": "slot_pt_priya_2026_04_29_1300"
           },
-          "result_summary": "created pending_review hold hold_01ksv9yk6szn4xbh56pes955hh until 2026-05-30T02:33:31.929Z"
+          "result_summary": "created pending_review hold hold_01ksy10c03pnkygrtcj5ryfznk until 2026-05-31T03:54:56.195Z"
         },
         {
-          "call_id": "01KSV9YK6TQ891QF3PF224PMTD",
+          "call_id": "01KSY10C03TX391SGMW9Y252VT",
           "name": "create_task",
           "args": {
             "assignee": "intake",
@@ -299,27 +299,27 @@
             "notes": "Reviewable hold placed with Priya Shah, PT, DPT at 2026-04-29T13:00:00-07:00. Confirm with family and finalize.",
             "title": "Confirm and schedule evaluation for Mateo Ramirez"
           },
-          "result_summary": "created task task_01ksv9yk6tryq55emgd0hq23d5 for intake"
+          "result_summary": "created task task_01ksy10c031wjztf66mjat559h for intake"
         },
         {
-          "call_id": "01KSV9YPKZBJ8YTEGYXW6JCNP3",
+          "call_id": "01KSY10EX7NX35ZCZCWH0WV3RY",
           "name": "draft_message",
           "args": {
-            "body": "Dear Ramirez Family,\n\nThank you so much for reaching out — we're always happy to hear from you! We've located Mateo's existing file and confirmed that your insurance is in-network, and we have two available Physical Therapy appointment options for your review. A tentative hold has been placed on the earliest available time with Priya Shah, PT, DPT, and a member of our team will be in touch shortly to confirm the details and answer any questions you may have.\n\nWarm regards,\n[Staff Name]\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+            "body": "Dear Ramirez Family,\n\nThank you so much for reaching out about scheduling an appointment for Mateo — we're happy to help! Our team has identified two available physical therapy appointment options for him, and a tentative hold has been placed on the earliest slot with Priya Shah, PT, DPT, pending staff review. A team member will confirm availability, finalize the details with you, and answer any questions you may have.\n\nWe look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
             "channel": "email",
             "language": "en",
             "recipient": "carla.mendez@example.com"
           },
-          "result_summary": "created draft draft_01ksv9ypkzh1tws8893m92gm3j (email, en)"
+          "result_summary": "created draft draft_01ksy10ex7r5vm7vkyjjzh5b9k (email, en)"
         }
       ],
       "recommended_next_action": "Confirm the reviewable hold with the family and finalize the evaluation appointment.",
-      "draft_reply": "Dear Ramirez Family,\n\nThank you so much for reaching out — we're always happy to hear from you! We've located Mateo's existing file and confirmed that your insurance is in-network, and we have two available Physical Therapy appointment options for your review. A tentative hold has been placed on the earliest available time with Priya Shah, PT, DPT, and a member of our team will be in touch shortly to confirm the details and answer any questions you may have.\n\nWarm regards,\n[Staff Name]\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+      "draft_reply": "Dear Ramirez Family,\n\nThank you so much for reaching out about scheduling an appointment for Mateo — we're happy to help! Our team has identified two available physical therapy appointment options for him, and a tentative hold has been placed on the earliest slot with Priya Shah, PT, DPT, pending staff review. A team member will confirm availability, finalize the details with you, and answer any questions you may have.\n\nWe look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
       "task_ids": [
-        "task_01ksv9yk6tryq55emgd0hq23d5"
+        "task_01ksy10c031wjztf66mjat559h"
       ],
       "escalation": null,
-      "decision_rationale": "P2 / new_referral. search_patient → existing patient Mateo Ramirez Jr.. verify_insurance → in_network. find_slots(PT, en) → 2 options; placed a reviewable hold (hold_01ksv9yk6szn4xbh56pes955hh) on the earliest with Priya Shah, PT, DPT."
+      "decision_rationale": "P2 / new_referral. search_patient → confirmed existing patient (name + DOB match): pat_mateo_ramirez_jr. verify_insurance → in_network. find_slots(PT, en) → 2 options; placed a reviewable hold (hold_01ksy10c03pnkygrtcj5ryfznk) on the earliest with Priya Shah, PT, DPT."
     },
     {
       "item_id": "item_5",
@@ -333,14 +333,14 @@
         "discipline": [
           "SLP"
         ],
-        "diagnosis_or_concern": "difficulty producing R sounds",
+        "diagnosis_or_concern": "Difficulty producing R sounds",
         "payer": null,
         "member_id": null
       },
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9YRW7ZJFKSF004DQCKBQJ",
+          "call_id": "01KSY10HYMEW0ZFT55XEBV0SMR",
           "name": "search_patient",
           "args": {
             "name": "Ava"
@@ -348,7 +348,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9YRW9NG11TZJJ45KGBYA8",
+          "call_id": "01KSY10HYNYF4VV2YWP758M0NW",
           "name": "lookup_policy",
           "args": {
             "topic": "clinical_advice"
@@ -356,32 +356,32 @@
           "result_summary": "2 policy snippets for clinical_advice"
         },
         {
-          "call_id": "01KSV9YRW9KQY7RWN636R1FNND",
+          "call_id": "01KSY10HYPC0X76MSXQFKH1MBV",
           "name": "create_task",
           "args": {
             "assignee": "clinical_lead",
             "due": "2026-04-29",
-            "notes": "Parent asked a clinical question; route to screening/evaluation. Do not answer clinically over message. Concern: difficulty producing R sounds.",
+            "notes": "Parent asked a clinical question; route to screening/evaluation. Do not answer clinically over message. Concern: Difficulty producing R sounds.",
             "title": "Clinician review of parent question re Ava"
           },
-          "result_summary": "created task task_01ksv9yrw90zphan2nzzezx1yz for clinical_lead"
+          "result_summary": "created task task_01ksy10hyphhbzdydrj3qrdz87 for clinical_lead"
         },
         {
-          "call_id": "01KSV9YWBZJ2AE2BAC4M9M2KQ3",
+          "call_id": "01KSY10N5KBE9P7CNZV3JVZMJN",
           "name": "draft_message",
           "args": {
-            "body": "Dear Family,\n\nThank you so much for reaching out about Ava — we're glad you contacted us! Because we don't yet have a record on file for Ava, our next step will be to have a team member locate or set up her information and then route your message to the appropriate clinician for review. Please note that this is a draft reply for our front-desk staff to review before anything is sent, and no appointment has been scheduled yet. We look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+            "body": "Dear Family,\n\nThank you so much for reaching out about Ava — we're glad you contacted us! Because we don't yet have a record on file for Ava, our next step will be to have a team member gather some basic information to get her set up, and your message has been flagged for one of our clinicians to review so the right person can follow up with you directly. We look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
             "channel": "portal",
             "language": "en",
             "recipient": "Jordan Kim"
           },
-          "result_summary": "created draft draft_01ksv9ywbz78107hah31g4vrad (portal, en)"
+          "result_summary": "created draft draft_01ksy10n5ky9y7hc0sjmgqg70q (portal, en)"
         }
       ],
       "recommended_next_action": "Route the clinical question to a clinician/evaluation; do not answer it over message.",
-      "draft_reply": "Dear Family,\n\nThank you so much for reaching out about Ava — we're glad you contacted us! Because we don't yet have a record on file for Ava, our next step will be to have a team member locate or set up her information and then route your message to the appropriate clinician for review. Please note that this is a draft reply for our front-desk staff to review before anything is sent, and no appointment has been scheduled yet. We look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
+      "draft_reply": "Dear Family,\n\nThank you so much for reaching out about Ava — we're glad you contacted us! Because we don't yet have a record on file for Ava, our next step will be to have a team member gather some basic information to get her set up, and your message has been flagged for one of our clinicians to review so the right person can follow up with you directly. We look forward to connecting with you soon!\n\n(Draft for staff review; it has not been sent and no appointment has been booked.)",
       "task_ids": [
-        "task_01ksv9yrw90zphan2nzzezx1yz"
+        "task_01ksy10hyphhbzdydrj3qrdz87"
       ],
       "escalation": null,
       "decision_rationale": "P2 / clinical_question. search_patient → no existing record (treat as new/unverified). Clinical question detected → cited clinical_advice policy, created a clinician-review task, and drafted a routing reply (no clinical advice given)."
@@ -408,7 +408,7 @@
       ],
       "tools_called": [
         {
-          "call_id": "01KSV9YYRNGRNF9J2H217HYGWH",
+          "call_id": "01KSY10Q1P1P9XKZHRTNEYMNW8",
           "name": "search_patient",
           "args": {
             "name": "Sam Taylor"
@@ -416,7 +416,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9YYRP6BK9KNDGJ3EWKMZ7",
+          "call_id": "01KSY10Q1QZRK2T69CMG4ZAK89",
           "name": "lookup_policy",
           "args": {
             "topic": "service_lines"
@@ -424,7 +424,7 @@
           "result_summary": "2 policy snippets for service_lines"
         },
         {
-          "call_id": "01KSV9YYRQ6A2CBGQV2194TBM6",
+          "call_id": "01KSY10Q1QS2YP7EBT0PRCA950",
           "name": "create_task",
           "args": {
             "assignee": "intake",
@@ -432,13 +432,13 @@
             "notes": "Referral is missing: parent/guardian contact, insurance / payer. Collect before scheduling an evaluation.",
             "title": "Obtain missing intake info for Sam Taylor"
           },
-          "result_summary": "created task task_01ksv9yyrqqebfsvkvnvx1jv7s for intake"
+          "result_summary": "created task task_01ksy10q1qtcv0qkh0rtbjephq for intake"
         }
       ],
       "recommended_next_action": "Route to a human reviewer for triage.",
       "draft_reply": null,
       "task_ids": [
-        "task_01ksv9yyrqqebfsvkvnvx1jv7s"
+        "task_01ksy10q1qtcv0qkh0rtbjephq"
       ],
       "escalation": null,
       "decision_rationale": "P2 / missing_paperwork. search_patient → no existing record (treat as new/unverified). Referral missing core fields (parent/guardian contact, insurance / payer) → created intake task to obtain them; no slot held until intake is complete."
@@ -451,18 +451,18 @@
       "extracted_intake": {
         "child_name": "Isabella Lopez",
         "dob_or_age": "5 años",
-        "parent_contact": "Ana Lopez, 555-0107",
+        "parent_contact": "555-0107",
         "discipline": [
           "SLP"
         ],
-        "diagnosis_or_concern": "Speech evaluation requested",
+        "diagnosis_or_concern": "speech evaluation requested",
         "payer": "Medicaid",
         "member_id": "MCD-55320"
       },
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9Z0XBZM9QFKPMJNQ4QDZY",
+          "call_id": "01KSY10S3R5KBKWVVDKGHCYMJ8",
           "name": "search_patient",
           "args": {
             "name": "Isabella Lopez"
@@ -470,7 +470,7 @@
           "result_summary": "0 patient matches"
         },
         {
-          "call_id": "01KSV9Z0XCFNK31SWGVTRRQY4Q",
+          "call_id": "01KSY10S3SJM0CSB90CZ7NVBGD",
           "name": "verify_insurance",
           "args": {
             "member_id": "MCD-55320",
@@ -479,7 +479,7 @@
           "result_summary": "insurance status: in_network (Medicaid)"
         },
         {
-          "call_id": "01KSV9Z0XD2AJ76ZZXWMST0PCC",
+          "call_id": "01KSY10S3V8MRBZQ2MEC4BXVDE",
           "name": "find_slots",
           "args": {
             "discipline": "SLP",
@@ -488,16 +488,16 @@
           "result_summary": "2 matching slots; earliest 2026-04-30T11:00:00-07:00 with Lucia Morales, MA CCC-SLP"
         },
         {
-          "call_id": "01KSV9Z0XDY1X2YS8DFZF6CD3K",
+          "call_id": "01KSY10S3WM4MGEZ9W1ZSPZ4BQ",
           "name": "hold_slot",
           "args": {
             "patient_ref": "new:Isabella Lopez",
             "slot_id": "slot_slp_lucia_2026_04_30_1100"
           },
-          "result_summary": "created pending_review hold hold_01ksv9z0xd95hctxqgjs4b57z7 until 2026-05-30T02:33:45.965Z"
+          "result_summary": "created pending_review hold hold_01ksy10s3we7e5sycndkqxm74m until 2026-05-31T03:55:09.628Z"
         },
         {
-          "call_id": "01KSV9Z0XFA4C2RXZ0Z3VYNYBN",
+          "call_id": "01KSY10S3WWR5AXESQ2AW7XZYK",
           "name": "create_task",
           "args": {
             "assignee": "intake",
@@ -505,27 +505,27 @@
             "notes": "Reviewable hold placed with Lucia Morales, MA CCC-SLP at 2026-04-30T11:00:00-07:00. Confirm with family and finalize.",
             "title": "Confirm and schedule evaluation for Isabella Lopez"
           },
-          "result_summary": "created task task_01ksv9z0xedf1kjfxrx2bwr5zy for intake"
+          "result_summary": "created task task_01ksy10s3w1dveb7vraj360cy5 for intake"
         },
         {
-          "call_id": "01KSV9Z57XVTSYVNBGXB804EG5",
+          "call_id": "01KSY10XCQWEY49HPFJB1N50KA",
           "name": "draft_message",
           "args": {
-            "body": "---BORRADOR PARA REVISIÓN DEL PERSONAL — NO ENVIADO---\n\nEstimada familia de Isabella, gracias por comunicarse con nosotros. Hemos encontrado disponibilidad con nuestra terapeuta de lenguaje Lucía Morales, MA CCC-SLP, y hemos reservado provisionalmente un horario pendiente de confirmación por parte de nuestro equipo. Un miembro del personal revisará esta información, verificará los datos de Isabella y se pondrá en contacto con ustedes para confirmar todos los detalles de la cita. ¡Estamos muy contentos de poder acompañarlos!",
+            "body": "---BORRADOR PARA REVISIÓN DEL PERSONAL — NO ENVIADO---\n\nEstimada familia de Isabella, gracias por comunicarse con nosotros. Hemos recibido su solicitud y, como primer paso, necesitaremos verificar los datos de Isabella en nuestro sistema antes de confirmar cualquier cita. Contamos con disponibilidad con nuestra especialista en lenguaje y comunicación, y un miembro de nuestro equipo se pondrá en contacto con ustedes a la brevedad para completar el proceso y compartir las opciones de horario disponibles. ¡Estamos muy contentos de acompañarlos en este camino!",
             "channel": "phone",
             "language": "es",
             "recipient": "555-0107"
           },
-          "result_summary": "created draft draft_01ksv9z57xreq9wnhvtf77ff0h (phone, es)"
+          "result_summary": "created draft draft_01ksy10xcqc0yry6ct1m8x5zg5 (phone, es)"
         }
       ],
       "recommended_next_action": "Confirm the reviewable hold with the family and finalize the evaluation appointment.",
-      "draft_reply": "---BORRADOR PARA REVISIÓN DEL PERSONAL — NO ENVIADO---\n\nEstimada familia de Isabella, gracias por comunicarse con nosotros. Hemos encontrado disponibilidad con nuestra terapeuta de lenguaje Lucía Morales, MA CCC-SLP, y hemos reservado provisionalmente un horario pendiente de confirmación por parte de nuestro equipo. Un miembro del personal revisará esta información, verificará los datos de Isabella y se pondrá en contacto con ustedes para confirmar todos los detalles de la cita. ¡Estamos muy contentos de poder acompañarlos!",
+      "draft_reply": "---BORRADOR PARA REVISIÓN DEL PERSONAL — NO ENVIADO---\n\nEstimada familia de Isabella, gracias por comunicarse con nosotros. Hemos recibido su solicitud y, como primer paso, necesitaremos verificar los datos de Isabella en nuestro sistema antes de confirmar cualquier cita. Contamos con disponibilidad con nuestra especialista en lenguaje y comunicación, y un miembro de nuestro equipo se pondrá en contacto con ustedes a la brevedad para completar el proceso y compartir las opciones de horario disponibles. ¡Estamos muy contentos de acompañarlos en este camino!",
       "task_ids": [
-        "task_01ksv9z0xedf1kjfxrx2bwr5zy"
+        "task_01ksy10s3w1dveb7vraj360cy5"
       ],
       "escalation": null,
-      "decision_rationale": "P2 / new_referral. search_patient → no existing record (treat as new/unverified). verify_insurance → in_network. find_slots(SLP, es) → 2 options; placed a reviewable hold (hold_01ksv9z0xd95hctxqgjs4b57z7) on the earliest with Lucia Morales, MA CCC-SLP."
+      "decision_rationale": "P2 / new_referral. search_patient → no existing record (treat as new/unverified). verify_insurance → in_network. find_slots(SLP, es) → 2 options; placed a reviewable hold (hold_01ksy10s3we7e5sycndkqxm74m) on the earliest with Lucia Morales, MA CCC-SLP."
     },
     {
       "item_id": "item_8",
@@ -546,7 +546,7 @@
       "missing_info": [],
       "tools_called": [
         {
-          "call_id": "01KSV9Z7CGH7NESFTHC2KY2K02",
+          "call_id": "01KSY10ZG0EHW9TRDAZY1YAT95",
           "name": "search_patient",
           "args": {
             "dob": "2017-11-02",
@@ -555,7 +555,7 @@
           "result_summary": "1 patient match: Noah Patel (2017-11-02)"
         },
         {
-          "call_id": "01KSV9Z7CH6TGVMQ6652907FF8",
+          "call_id": "01KSY10ZG0YMY0PDC23ATZ5R65",
           "name": "lookup_policy",
           "args": {
             "topic": "scheduling"
@@ -563,7 +563,7 @@
           "result_summary": "2 policy snippets for scheduling"
         },
         {
-          "call_id": "01KSV9Z7CHDKZGYJ899FC8Y95Z",
+          "call_id": "01KSY10ZG1EB546TW8A641H5VT",
           "name": "create_task",
           "args": {
             "assignee": "front_desk",
@@ -571,27 +571,27 @@
             "notes": "Same-day reschedule/cancel requested. Confirm and offer the next available slot; staff to action today.",
             "title": "Same-day reschedule for Noah Patel"
           },
-          "result_summary": "created task task_01ksv9z7chxbk68ey5q6mwd5yn for front_desk"
+          "result_summary": "created task task_01ksy10zg1spb6zd4sbxz84g70 for front_desk"
         },
         {
-          "call_id": "01KSV9ZDKC6N57JP6K3966VX1T",
+          "call_id": "01KSY1129HG9KTFQM9WX8GZGXK",
           "name": "draft_message",
           "args": {
-            "body": "Dear Patel Family, thank you so much for reaching out to us about Noah's appointment today — we completely understand that schedules can change unexpectedly. Our front-desk team has been flagged to assist with this same-day reschedule as a priority and will be in touch with you shortly to find the best available option. Please know this message is a draft for staff review and has not yet been sent, and no changes to Noah's appointment have been made at this time.",
+            "body": "---DRAFT FOR STAFF REVIEW — NOT YET SENT---\n\nHi there, thank you so much for reaching out about Noah's appointment today — we completely understand that schedules can change unexpectedly! A member of our front-desk team will be in touch with you shortly to find the best available option that works for your family. We look forward to connecting with you soon!",
             "channel": "email",
             "language": "en",
             "recipient": "anita.patel@example.com"
           },
-          "result_summary": "created draft draft_01ksv9zdkc5cqw2jgqb1gnwcy6 (email, en)"
+          "result_summary": "created draft draft_01ksy1129hc77fgfp48888bk1x (email, en)"
         }
       ],
       "recommended_next_action": "Front desk should action the same-day reschedule and confirm a new time with the family today.",
-      "draft_reply": "Dear Patel Family, thank you so much for reaching out to us about Noah's appointment today — we completely understand that schedules can change unexpectedly. Our front-desk team has been flagged to assist with this same-day reschedule as a priority and will be in touch with you shortly to find the best available option. Please know this message is a draft for staff review and has not yet been sent, and no changes to Noah's appointment have been made at this time.",
+      "draft_reply": "---DRAFT FOR STAFF REVIEW — NOT YET SENT---\n\nHi there, thank you so much for reaching out about Noah's appointment today — we completely understand that schedules can change unexpectedly! A member of our front-desk team will be in touch with you shortly to find the best available option that works for your family. We look forward to connecting with you soon!",
       "task_ids": [
-        "task_01ksv9z7chxbk68ey5q6mwd5yn"
+        "task_01ksy10zg1spb6zd4sbxz84g70"
       ],
       "escalation": null,
-      "decision_rationale": "P1 / existing_patient_request. search_patient → existing patient Noah Patel. Same-day operational request → P1; cited scheduling policy and created a same-day front-desk task; no automated hold (reschedules are staff-actioned)."
+      "decision_rationale": "P1 / existing_patient_request. search_patient → confirmed existing patient (name + DOB match): pat_noah_patel. Same-day operational request → P1; cited scheduling policy and created a same-day front-desk task; no automated hold (reschedules are staff-actioned)."
     }
   ]
 }
